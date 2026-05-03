@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Snake v0.0.1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+
+    :root {
+      --color-bg-dark:  #000000;
+      --color-panel:    #0c0024;
+      --color-primary:  #ffde00;
+      --color-accent:   #1919ff;
+      --color-glow:     #ffffff;
+      --color-shadow:   #06000e;
+    }
+
+    .menu-scroll {
+      background: linear-gradient(180deg, var(--color-bg-dark) 0%, var(--color-panel) 45%, var(--color-panel) 55%, var(--color-bg-dark) 100%);
+      border: 6px solid var(--color-primary);
+      box-shadow: 0 0 6px 2px rgba(255,222,0,0.55),
+                  0 0 28px 4px rgba(255,222,0,0.28),
+                  0 0 70px rgba(255,222,0,0.12),
+                  inset 0 0 40px rgba(0,0,0,0.45);
+      width: 640px; max-width: 92vw; max-height: 92vh;
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .menu-scroll::-webkit-scrollbar { display: none; }
+    .start-menu-btn {
+      display: flex; align-items: center; gap: 12px; width: 100%;
+      padding: 14px 24px; font-family: 'VT323', monospace; font-size: 1.45rem;
+      text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-glow);
+      background: transparent; border: none; border-bottom: 2px solid var(--color-shadow);
+      cursor: pointer; text-shadow: 2px 2px 0 var(--color-shadow);
+      text-align: left; transition: background 0.12s, padding-left 0.12s;
+    }
+    .start-menu-btn:hover { background: rgba(255,222,0,0.1); color: #fff; padding-left: 28px; }
+    .start-menu-btn:last-child { border-bottom: none; }
+    .start-back-btn {
+      font-family: 'VT323', monospace; font-size: 1.1rem; text-transform: uppercase;
+      padding: 6px 14px; color: var(--color-primary); background: transparent;
+      border: 4px solid var(--color-primary); cursor: pointer; letter-spacing: 0.05em;
+    }
+    .start-back-btn:hover { background: var(--color-primary); color: var(--color-bg-dark); }
+    .subpanel-header {
+      display: flex; align-items: center; gap: 16px; padding: 16px;
+      background: var(--color-bg-dark); position: sticky; top: 0; z-index: 10;
+      border-bottom: 6px solid var(--color-primary);
+    }
+    .subpanel-header h2 {
+      font-size: 1.5rem; color: var(--color-glow);
+      font-weight: bold; text-transform: uppercase; font-style: italic;
+    }
+    .subpanel-footer { position: sticky; bottom: 0; height: 6px; background: var(--color-bg-dark); }
+
+    body {
+      background-color: var(--color-bg-dark);
+      font-family: 'Press Start 2P', monospace;
+      color: #fff;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      box-sizing: border-box;
+    }
+    .game-shell {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #hud {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 16px;
+      background: var(--color-panel);
+      border-bottom: 2px solid var(--color-accent);
+      flex-shrink: 0;
+    }
+    #canvas-wrapper {
+      flex: 1;
+      min-height: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      background: var(--color-bg-dark);
+    }
+    #game-canvas {
+      border: 3px solid var(--color-accent);
+      box-shadow: 0 0 20px rgba(25,25,255,0.4), inset 0 0 40px rgba(0,0,0,0.8);
+      display: block;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ START OVERLAY ═══ -->
+  <div id="start-overlay" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:#000;">
+
+    <!-- ── MAIN ── -->
+    <div id="start-main" class="menu-scroll relative z-10">
+      <div class="text-center pt-4 pb-4 px-6" style="border-bottom:4px solid var(--color-shadow);">
+        <div style="min-height:140px;display:flex;align-items:center;justify-content:center;">
+          <h1 style="font-family:'Press Start 2P',monospace;font-size:clamp(2rem,10vw,4rem);
+                      color:var(--color-primary);text-shadow:3px 3px 0 var(--color-shadow),0 0 20px rgba(255,222,0,0.5);
+                      text-transform:uppercase;letter-spacing:0.08em;line-height:1.2;">
+            SNAKE
+          </h1>
+        </div>
+        <div class="flex items-center justify-center gap-3 mt-2">
+          <div class="flex-grow h-px" style="background:linear-gradient(to right,transparent,var(--color-primary))"></div>
+          <span style="font-size:0.6rem;color:var(--color-primary);text-transform:uppercase;letter-spacing:0.4em;font-family:'VT323',monospace;">Eat. Grow. Survive.</span>
+          <div class="flex-grow h-px" style="background:linear-gradient(to left,transparent,var(--color-primary))"></div>
+        </div>
+      </div>
+      <div class="flex flex-col">
+        <button class="start-menu-btn" onclick="startGame()"><span>Play</span><span class="ml-auto text-base opacity-40 font-sans">↵</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('challenge')"><span>Challenge</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('howtoplay')"><span>How to Play</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('highscores')"><span>High Scores</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;opacity:0.6;">
+        <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,#fff);"></div>
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.1</span>
+        <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,#fff);"></div>
+      </div>
+    </div>
+
+    <!-- ── CHALLENGE ── -->
+    <div id="start-challenge" class="menu-scroll hidden relative z-10">
+      <div class="subpanel-header">
+        <button class="start-back-btn" onclick="showStartPanel('main')">← Back</button>
+        <h2>Challenge</h2>
+      </div>
+      <div class="p-6 space-y-6" style="font-family:'VT323',monospace;">
+        <div>
+          <h3 style="color:var(--color-glow);text-transform:uppercase;font-weight:bold;border-bottom:1px solid var(--color-shadow);padding-bottom:4px;margin-bottom:12px">Accept a Challenge</h3>
+          <input id="challenge-input" type="text" placeholder="Paste challenge code..."
+                 style="width:100%;padding:10px 12px;background:var(--color-panel);border:2px solid var(--color-primary);
+                        color:var(--color-glow);font-family:'VT323',monospace;font-size:1rem;outline:none;box-sizing:border-box;">
+          <button onclick="acceptChallenge()"
+                  style="margin-top:12px;width:100%;padding:10px;font-family:'VT323',monospace;
+                         font-size:1.2rem;text-transform:uppercase;background:var(--color-primary);
+                         color:var(--color-bg-dark);border:none;cursor:pointer;">
+            Accept &amp; Play
+          </button>
+          <p id="challenge-error" class="hidden" style="margin-top:8px;color:#e84449;font-size:0.875rem;"></p>
+        </div>
+        <div>
+          <h3 style="color:var(--color-glow);text-transform:uppercase;font-weight:bold;border-bottom:1px solid var(--color-shadow);padding-bottom:4px;margin-bottom:12px">Issue a Challenge</h3>
+          <p style="color:#d1d5db;font-size:0.875rem;margin-bottom:12px">Play normally. At the end you'll get a shareable code — friends play the exact same food spawns and try to beat your score.</p>
+          <button onclick="startGame()"
+                  style="width:100%;padding:10px;font-family:'VT323',monospace;font-size:1.2rem;
+                         text-transform:uppercase;background:transparent;color:var(--color-primary);
+                         border:2px solid var(--color-primary);cursor:pointer;">
+            Play &amp; Generate Code
+          </button>
+        </div>
+      </div>
+      <div class="subpanel-footer"></div>
+    </div>
+
+    <!-- ── HOW TO PLAY ── -->
+    <div id="start-howtoplay" class="menu-scroll hidden relative z-10">
+      <div class="subpanel-header">
+        <button class="start-back-btn" onclick="showStartPanel('main')">← Back</button>
+        <h2>How to Play</h2>
+      </div>
+      <div class="p-5 text-sm space-y-4" style="font-family:'VT323',monospace;color:#d1d5db;">
+        <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
+          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">GOAL</p>
+          <p style="line-height:1.6">Eat as many dots as possible in 90 seconds. Each dot scores 10 points. Don't hit the walls or your own tail.</p>
+        </div>
+        <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
+          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">CONTROLS</p>
+          <p style="line-height:1.6">Arrow keys or WASD to steer. On mobile, swipe in any direction. The game starts on your first move.</p>
+        </div>
+        <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
+          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">SPEED</p>
+          <p style="line-height:1.6">Every 5 food eaten, the snake speeds up. Manage your corners carefully at high speed.</p>
+        </div>
+        <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
+          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">CHALLENGE MODE</p>
+          <p style="line-height:1.6">Food spawns are seeded — same code means the same food positions for everyone. Share your code for a fair async head-to-head.</p>
+        </div>
+      </div>
+      <div class="subpanel-footer"></div>
+    </div>
+
+    <!-- ── HIGH SCORES ── -->
+    <div id="start-highscores" class="menu-scroll hidden relative z-10">
+      <div class="subpanel-header">
+        <button class="start-back-btn" onclick="showStartPanel('main')">← Back</button>
+        <h2>High Scores</h2>
+      </div>
+      <div class="p-5" id="hs-list">
+        <p style="text-align:center;color:var(--color-primary);opacity:0.5;font-size:0.875rem;margin-top:32px">No scores yet.</p>
+      </div>
+      <div class="subpanel-footer"></div>
+    </div>
+
+    <!-- ── PATCH NOTES ── -->
+    <div id="start-patchnotes" class="menu-scroll hidden relative z-10">
+      <div class="subpanel-header">
+        <button class="start-back-btn" onclick="showStartPanel('main')">← Back</button>
+        <h2>Patch Notes</h2>
+      </div>
+      <div id="pn-list" class="p-5 text-sm space-y-5" style="font-family:'VT323',monospace;"></div>
+      <div class="subpanel-footer"></div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div id="start-settings" class="menu-scroll hidden relative z-10">
+      <div class="subpanel-header">
+        <button class="start-back-btn" onclick="showStartPanel('main')">← Back</button>
+        <h2>Settings</h2>
+      </div>
+      <div class="p-6 space-y-6" style="font-family:'VT323',monospace;">
+        <div>
+          <h3 style="color:var(--color-glow);text-transform:uppercase;font-weight:bold;font-size:0.875rem;border-bottom:1px solid var(--color-shadow);padding-bottom:8px;margin-bottom:16px;letter-spacing:0.1em">Audio</h3>
+          <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--color-shadow)">
+            <span style="color:#d1d5db">SFX Volume</span>
+            <div class="flex items-center gap-3">
+              <input type="range" id="vol-slider" min="0" max="100" value="100" oninput="updateVolume(this.value)"
+                     style="accent-color:var(--color-primary);width:120px">
+              <span id="vol-val" style="color:var(--color-glow);width:40px;text-align:right">100%</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <span style="color:#d1d5db">Sound Effects</span>
+            <button id="sfx-toggle" onclick="toggleSFX()"
+                    style="padding:4px 12px;text-transform:uppercase;font-weight:bold;font-family:'VT323',monospace;
+                           border:4px solid var(--color-primary);background:var(--color-panel);color:var(--color-glow);
+                           box-shadow:inset -2px -2px 0px var(--color-shadow);cursor:pointer;">ON</button>
+          </div>
+        </div>
+      </div>
+      <div class="subpanel-footer"></div>
+    </div>
+
+  </div><!-- /start-overlay -->
+
+  <!-- ── END OVERLAY ── -->
+  <div id="end-overlay" class="fixed inset-0 z-[150] flex items-center justify-center hidden" style="background:rgba(0,0,0,0.88);">
+    <div class="menu-scroll" style="max-width:440px;text-align:center;">
+      <div style="padding:32px 24px;">
+        <div id="end-title" style="font-family:'Press Start 2P',monospace;font-size:1.3rem;color:var(--color-primary);text-transform:uppercase;margin-bottom:8px;">GAME OVER</div>
+        <div style="font-family:'VT323',monospace;font-size:3.5rem;color:var(--color-glow);margin:16px 0;" id="end-score">0</div>
+        <div id="end-hs-line" style="font-family:'VT323',monospace;font-size:1.1rem;color:var(--color-primary);margin-bottom:24px;"></div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+          <button id="share-btn" onclick="copyShareText(currentScore)"
+                  style="padding:12px;font-family:'VT323',monospace;font-size:1.2rem;text-transform:uppercase;
+                         background:var(--color-primary);color:var(--color-bg-dark);border:none;cursor:pointer;width:100%;">
+            Share Challenge Code
+          </button>
+          <button onclick="playAgain()"
+                  style="padding:12px;font-family:'VT323',monospace;font-size:1.2rem;text-transform:uppercase;
+                         background:transparent;color:var(--color-primary);border:2px solid var(--color-primary);cursor:pointer;width:100%;">
+            Play Again
+          </button>
+          <button onclick="goToMenu()"
+                  style="padding:10px;font-family:'VT323',monospace;font-size:1rem;text-transform:uppercase;
+                         background:transparent;color:var(--color-glow);border:none;cursor:pointer;opacity:0.5;">
+            ← Main Menu
+          </button>
+        </div>
+        <div id="end-seed" style="font-family:'VT323',monospace;font-size:0.85rem;color:var(--color-accent);opacity:0.7;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME CONTENT -->
+  <div class="game-shell w-full">
+    <div id="hud">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:1rem;letter-spacing:0.1em;">SCORE</span>
+        <span id="hud-score" style="color:var(--color-glow);font-family:'Press Start 2P',monospace;font-size:0.85rem;">0</span>
+      </div>
+      <div>
+        <span id="hud-timer" style="color:var(--color-primary);font-family:'Press Start 2P',monospace;font-size:0.9rem;letter-spacing:0.05em;">1:30</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:1rem;letter-spacing:0.1em;">BEST</span>
+        <span id="hud-best" style="color:var(--color-glow);font-family:'Press Start 2P',monospace;font-size:0.85rem;">0</span>
+      </div>
+    </div>
+    <div id="canvas-wrapper">
+      <canvas id="game-canvas"></canvas>
+    </div>
+    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;">&copy; Tacticon Studios 2026 &mdash; v0.0.1</p>
+  </div>
+
+  <script>
+    // ─── WIPE GUARD ─────────────────────────────────────────────────────────
+    (function(){ var k='XSN_wipe_v1'; if(localStorage.getItem(k)!=='1'){ localStorage.removeItem('XSN_stats'); localStorage.setItem(k,'1'); } })();
+
+    // ─── STATS ──────────────────────────────────────────────────────────────
+    const STATS_KEY = 'XSN_stats';
+    function loadStats() {
+      return JSON.parse(localStorage.getItem(STATS_KEY) || '{"highScore":0,"gamesPlayed":0,"totalScore":0,"history":[]}');
+    }
+    function saveGame(score, isChallenge, won) {
+      const s = loadStats();
+      if (score > s.highScore) s.highScore = score;
+      s.gamesPlayed++;
+      s.totalScore += score;
+      s.history.unshift({ score, date: Date.now(), isChallenge, won });
+      s.history = s.history.slice(0, 20);
+      localStorage.setItem(STATS_KEY, JSON.stringify(s));
+    }
+
+    // ─── SEEDED RNG (mulberry32) ─────────────────────────────────────────────
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    let rng = Math.random;
+
+    // ─── CHALLENGE SYSTEM ────────────────────────────────────────────────────
+    let challengeSeed = null;
+    let isChallengeMode = false;
+    let currentScore = 0;
+
+    function generateSeed() {
+      return Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6,'0').toUpperCase();
+    }
+
+    function acceptChallenge() {
+      const raw = document.getElementById('challenge-input').value.trim().toUpperCase();
+      const errEl = document.getElementById('challenge-error');
+      if (!raw) { errEl.innerText = 'Paste a challenge code first.'; errEl.classList.remove('hidden'); return; }
+      challengeSeed = raw;
+      rng = mulberry32(parseInt(challengeSeed, 16));
+      isChallengeMode = true;
+      errEl.classList.add('hidden');
+      startGame(true);
+    }
+
+    function copyShareText(score) {
+      if (!challengeSeed) challengeSeed = generateSeed();
+      const text = `I scored ${score} on Snake! Challenge code: ${challengeSeed} — same food, can you beat it?`;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('share-btn');
+        if (btn) { btn.innerText = 'Copied!'; setTimeout(() => btn.innerText = 'Share Challenge Code', 2000); }
+      });
+    }
+
+    // ─── FRONT MENU ──────────────────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    const PATCH_NOTES = [
+      { v:'v0.0.1', date:'2026-05', notes:['Initial release.'] },
+    ];
+
+    function renderHighScores() {
+      const el = document.getElementById('hs-list');
+      const { history } = loadStats();
+      const sorted = [...history].sort((a,b) => b.score - a.score).slice(0, 10);
+      if (!sorted.length) {
+        el.innerHTML = `<p style="text-align:center;color:var(--color-primary);opacity:0.5;font-size:0.875rem;margin-top:32px">No scores yet.</p>`;
+        return;
+      }
+      el.innerHTML = sorted.map((s, i) => {
+        const d = new Date(s.date).toLocaleDateString();
+        const badge = s.isChallenge ? `<span style="color:#ffd700;font-size:0.7rem;margin-left:4px">[C]</span>` : '';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--color-shadow);font-size:0.875rem">
+          <span style="color:var(--color-primary);width:24px;text-align:right">${i+1}.</span>
+          <span style="flex:1;color:#fff">${escHtml(String(s.score))}${badge}</span>
+          <span style="color:var(--color-primary);opacity:0.5;font-size:0.75rem">${escHtml(d)}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function renderPatchNotes() {
+      const el = document.getElementById('pn-list');
+      el.innerHTML = PATCH_NOTES.map(p => `
+        <div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:4px">
+            <span style="color:var(--color-glow);font-weight:bold">${escHtml(p.v)}</span>
+            <span style="color:var(--color-primary);opacity:0.6;font-size:10px">${escHtml(p.date)}</span>
+          </div>
+          <ul style="margin:0;padding:0;list-style:none">
+            ${p.notes.map(n => `<li style="color:#d1d5db">• ${escHtml(n)}</li>`).join('')}
+          </ul>
+        </div>`).join('');
+    }
+
+    const START_PANELS = ['main','challenge','howtoplay','highscores','patchnotes','settings'];
+    function showStartPanel(name, fromPopstate=false) {
+      START_PANELS.forEach(p => {
+        const el = document.getElementById('start-'+p);
+        if (el) el.classList.toggle('hidden', p !== name);
+      });
+      if (name === 'highscores') renderHighScores();
+      if (name === 'patchnotes') renderPatchNotes();
+      if (!fromPopstate && name !== 'main') history.pushState({ panel: name }, document.title);
+    }
+    window.addEventListener('popstate', function(e) {
+      const ov = document.getElementById('start-overlay');
+      if (ov && !ov.classList.contains('hidden')) showStartPanel('main', true);
+    });
+
+    // ─── AUDIO ───────────────────────────────────────────────────────────────
+    let _ac = null, _masterGain = null, _pendingVolume = 1.0;
+    let sfxEnabled = true;
+    function _getAC() {
+      if (!_ac) {
+        _ac = new (window.AudioContext || window.webkitAudioContext)();
+        _masterGain = _ac.createGain();
+        _masterGain.gain.value = _pendingVolume;
+        _masterGain.connect(_ac.destination);
+      }
+      if (_ac.state === 'suspended') _ac.resume();
+      return _ac;
+    }
+    function _tone(freq, type, vol, attack, sustain, release, delay=0) {
+      if (!sfxEnabled) return;
+      const ac = _getAC();
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, ac.currentTime + delay);
+      g.gain.linearRampToValueAtTime(vol, ac.currentTime + delay + attack);
+      g.gain.setValueAtTime(vol, ac.currentTime + delay + attack + sustain);
+      g.gain.linearRampToValueAtTime(0, ac.currentTime + delay + attack + sustain + release);
+      o.connect(g); g.connect(_masterGain);
+      o.start(ac.currentTime + delay);
+      o.stop(ac.currentTime + delay + attack + sustain + release + 0.01);
+    }
+    function updateVolume(val) {
+      document.getElementById('vol-val').innerText = val + '%';
+      _pendingVolume = val / 100;
+      if (_masterGain) _masterGain.gain.value = _pendingVolume;
+    }
+    function toggleSFX() {
+      sfxEnabled = !sfxEnabled;
+      document.getElementById('sfx-toggle').innerText = sfxEnabled ? 'ON' : 'OFF';
+    }
+    const SFX = {
+      eat() { _tone(523, 'square', 0.07, 0.005, 0.02, 0.04); _tone(784, 'square', 0.05, 0.005, 0.01, 0.03, 0.03); },
+      die() { [220,196,175,156].forEach((f,i) => _tone(f, 'sawtooth', 0.1, 0.01, 0.08, 0.06, i*0.1)); },
+      tick() { _tone(880, 'square', 0.04, 0.002, 0.008, 0.015); },
+    };
+
+    // ─── GAME CONSTANTS ──────────────────────────────────────────────────────
+    const GRID        = 20;
+    const TIMER_SECS  = 90;
+    const BASE_SPEED  = 200;
+    const MIN_SPEED   = 80;
+    const SPEED_STEP  = 15;
+    const SPEED_EVERY = 5;
+    const PTS_FOOD    = 10;
+
+    // ─── GAME STATE ──────────────────────────────────────────────────────────
+    let snake, dir, nextDir, food, foodQueue, foodQueueIdx;
+    let score, alive, gameStarted;
+    let speed, moveInterval;
+    let foodEaten;
+    let timerLeft, timerInterval;
+
+    // ─── CANVAS ──────────────────────────────────────────────────────────────
+    function resizeCanvas() {
+      const canvas = document.getElementById('game-canvas');
+      const wrapper = document.getElementById('canvas-wrapper');
+      const size = Math.min(wrapper.clientWidth - 16, wrapper.clientHeight - 16);
+      canvas.width = size;
+      canvas.height = size;
+    }
+
+    // ─── FOOD QUEUE ──────────────────────────────────────────────────────────
+    function buildFoodQueue() {
+      const q = [];
+      for (let i = 0; i < 600; i++) q.push({ x: Math.floor(rng() * GRID), y: Math.floor(rng() * GRID) });
+      return q;
+    }
+
+    function spawnFood() {
+      while (foodQueueIdx < foodQueue.length) {
+        const pos = foodQueue[foodQueueIdx++];
+        if (!snake.some(s => s.x === pos.x && s.y === pos.y)) return pos;
+      }
+      for (let x = 0; x < GRID; x++)
+        for (let y = 0; y < GRID; y++)
+          if (!snake.some(s => s.x === x && s.y === y)) return { x, y };
+      return null;
+    }
+
+    // ─── DRAW ────────────────────────────────────────────────────────────────
+    function draw() {
+      const canvas = document.getElementById('game-canvas');
+      const ctx = canvas.getContext('2d');
+      const sz = canvas.width;
+      const cs = sz / GRID;
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, sz, sz);
+
+      ctx.strokeStyle = 'rgba(25,25,180,0.18)';
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= GRID; i++) {
+        ctx.beginPath(); ctx.moveTo(i * cs, 0); ctx.lineTo(i * cs, sz); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * cs); ctx.lineTo(sz, i * cs); ctx.stroke();
+      }
+
+      if (food) {
+        ctx.save();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ffffff';
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(food.x * cs + cs * 0.5, food.y * cs + cs * 0.5, cs * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      const pad = cs * 0.1;
+      snake.forEach((seg, i) => {
+        const x = seg.x * cs + pad;
+        const y = seg.y * cs + pad;
+        const w = cs - pad * 2;
+        if (i === 0) {
+          ctx.save();
+          ctx.shadowBlur = 14;
+          ctx.shadowColor = '#ffde00';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, w, w);
+          ctx.restore();
+        } else {
+          const t = i / Math.max(snake.length, 1);
+          ctx.fillStyle = `rgba(255,222,0,${1 - t * 0.5})`;
+          ctx.fillRect(x, y, w, w);
+        }
+      });
+
+      if (!gameStarted && alive) {
+        const fs = Math.max(8, Math.floor(cs * 0.5));
+        ctx.fillStyle = 'rgba(0,0,0,0.65)';
+        ctx.fillRect(0, sz * 0.4, sz, sz * 0.2);
+        ctx.fillStyle = '#ffde00';
+        ctx.font = `${fs}px 'Press Start 2P', monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText('PRESS ANY KEY', sz / 2, sz * 0.525);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    // ─── HUD ─────────────────────────────────────────────────────────────────
+    function updateHUD() {
+      document.getElementById('hud-score').innerText = score;
+      document.getElementById('hud-best').innerText = loadStats().highScore;
+      const m = Math.floor(timerLeft / 60);
+      const s = timerLeft % 60;
+      document.getElementById('hud-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+    }
+
+    // ─── GAME LOOP ────────────────────────────────────────────────────────────
+    function setMoveSpeed(ms) {
+      speed = ms;
+      if (moveInterval) { clearInterval(moveInterval); moveInterval = setInterval(gameTick, speed); }
+    }
+
+    function gameTick() {
+      if (!alive) return;
+      dir = { ...nextDir };
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+      if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID ||
+          snake.some(s => s.x === head.x && s.y === head.y)) {
+        endGame(false);
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (food && head.x === food.x && head.y === food.y) {
+        foodEaten++;
+        score += PTS_FOOD;
+        SFX.eat();
+        if (foodEaten % SPEED_EVERY === 0) setMoveSpeed(Math.max(MIN_SPEED, speed - SPEED_STEP));
+        food = spawnFood();
+        updateHUD();
+      } else {
+        snake.pop();
+      }
+
+      draw();
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timerLeft--;
+        if (timerLeft <= 10 && timerLeft > 0) SFX.tick();
+        updateHUD();
+        if (timerLeft <= 0) endGame(true);
+      }, 1000);
+    }
+
+    function firstMove() {
+      if (gameStarted || !alive) return;
+      gameStarted = true;
+      moveInterval = setInterval(gameTick, speed);
+      startTimer();
+    }
+
+    // ─── END GAME ────────────────────────────────────────────────────────────
+    function endGame(timeUp) {
+      alive = false;
+      clearInterval(moveInterval); moveInterval = null;
+      clearInterval(timerInterval); timerInterval = null;
+      if (!timeUp) SFX.die();
+      currentScore = score;
+      saveGame(score, isChallengeMode, timeUp);
+      setTimeout(() => showEndScreen(score, timeUp), timeUp ? 200 : 700);
+    }
+
+    function showEndScreen(sc, timeUp) {
+      const stats = loadStats();
+      const isNewHigh = stats.gamesPlayed > 1 && sc > 0 && sc === stats.highScore;
+      document.getElementById('end-title').innerText = timeUp ? "TIME'S UP!" : 'GAME OVER';
+      document.getElementById('end-score').innerText = sc;
+      document.getElementById('end-hs-line').innerText = isNewHigh ? '★ NEW HIGH SCORE ★' : `Best: ${stats.highScore}`;
+      document.getElementById('end-seed').innerText = `Seed: ${challengeSeed || '—'}`;
+      document.getElementById('end-overlay').classList.remove('hidden');
+    }
+
+    function playAgain() {
+      document.getElementById('end-overlay').classList.add('hidden');
+      initGame();
+    }
+
+    function goToMenu() {
+      document.getElementById('end-overlay').classList.add('hidden');
+      document.getElementById('hud').style.display = 'none';
+      document.getElementById('canvas-wrapper').style.display = 'none';
+      document.getElementById('start-overlay').classList.remove('hidden');
+      showStartPanel('main');
+    }
+
+    // ─── CONTROLS ────────────────────────────────────────────────────────────
+    const KEY_DIRS = {
+      ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0},
+      w:{x:0,y:-1}, s:{x:0,y:1}, a:{x:-1,y:0}, d:{x:1,y:0},
+      W:{x:0,y:-1}, S:{x:0,y:1}, A:{x:-1,y:0}, D:{x:1,y:0},
+    };
+
+    document.addEventListener('keydown', e => {
+      const d = KEY_DIRS[e.key];
+      if (!d) return;
+      e.preventDefault();
+      if (d.x === -dir.x && d.y === -dir.y) return;
+      nextDir = d;
+      firstMove();
+    });
+
+    let touchStartX, touchStartY;
+    const gameCanvas = document.getElementById('game-canvas');
+    gameCanvas.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    gameCanvas.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      const d = Math.abs(dx) > Math.abs(dy)
+        ? (dx > 0 ? {x:1,y:0} : {x:-1,y:0})
+        : (dy > 0 ? {x:0,y:1} : {x:0,y:-1});
+      if (d.x === -dir.x && d.y === -dir.y) return;
+      nextDir = d;
+      firstMove();
+    }, { passive: true });
+
+    // ─── GAME START ──────────────────────────────────────────────────────────
+    function startGame(fromChallenge=false) {
+      document.getElementById('start-overlay').classList.add('hidden');
+      document.getElementById('hud').style.display = 'flex';
+      document.getElementById('canvas-wrapper').style.display = 'flex';
+      if (!fromChallenge) {
+        challengeSeed = generateSeed();
+        rng = mulberry32(parseInt(challengeSeed, 16));
+        isChallengeMode = false;
+      }
+      resizeCanvas();
+      initGame();
+    }
+
+    // ─── INIT ────────────────────────────────────────────────────────────────
+    function initGame() {
+      snake      = [{x:10,y:9},{x:9,y:9},{x:8,y:9}];
+      dir        = {x:1,y:0};
+      nextDir    = {x:1,y:0};
+      score      = 0;
+      alive      = true;
+      gameStarted = false;
+      foodEaten  = 0;
+      speed      = BASE_SPEED;
+      timerLeft  = TIMER_SECS;
+      foodQueueIdx = 0;
+      foodQueue  = buildFoodQueue();
+      food       = spawnFood();
+      clearInterval(moveInterval); moveInterval = null;
+      clearInterval(timerInterval); timerInterval = null;
+      updateHUD();
+      draw();
+    }
+
+    window.addEventListener('resize', () => {
+      if (document.getElementById('canvas-wrapper').style.display !== 'none') {
+        resizeCanvas(); draw();
+      }
+    });
+
+    window.onload = resizeCanvas;
+  </script>
+</body>
+</html>
