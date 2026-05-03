@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Snake v0.0.2</title>
+  <title>SNEK v0.0.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
@@ -140,7 +140,7 @@
           <h1 style="font-family:'Press Start 2P',monospace;font-size:clamp(2rem,10vw,4rem);
                       color:var(--color-primary);text-shadow:3px 3px 0 var(--color-shadow),0 0 20px rgba(255,222,0,0.5);
                       text-transform:uppercase;letter-spacing:0.08em;line-height:1.2;">
-            SNAKE
+            SNEK
           </h1>
         </div>
         <div class="flex items-center justify-center gap-3 mt-2">
@@ -391,7 +391,7 @@
 
     function copyShareText(score) {
       if (!challengeSeed) challengeSeed = generateSeed();
-      const text = `I scored ${score} on Snake! Challenge code: ${challengeSeed} — same food, can you beat it?`;
+      const text = `I scored ${score} on SNEK! Challenge code: ${challengeSeed} — same food, can you beat it?`;
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('share-btn');
         if (btn) { btn.innerText = 'Copied!'; setTimeout(() => btn.innerText = 'Share Challenge Code', 2000); }
