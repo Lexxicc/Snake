@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="author" content="lexxicc">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SNEK v0.0.3</title>
+  <title>Python v0.0.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
@@ -71,10 +72,8 @@
       box-sizing: border-box;
     }
     .game-shell {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
       overflow: hidden;
     }
     #hud {
@@ -87,8 +86,7 @@
       flex-shrink: 0;
     }
     #canvas-wrapper {
-      flex: 1;
-      min-height: 0;
+      flex: 1; min-height: 0;
       display: none;
       align-items: center;
       justify-content: center;
@@ -99,33 +97,70 @@
       border: 3px solid var(--color-accent);
       box-shadow: 0 0 20px rgba(25,25,255,0.4), inset 0 0 40px rgba(0,0,0,0.8);
       display: block;
-      touch-action: none;
     }
-    #mobile-dpad {
+    #cmd-console {
       display: none;
-      grid-template-columns: repeat(3, 60px);
-      grid-template-rows: repeat(3, 60px);
-      gap: 6px;
-      justify-content: center;
-      padding: 8px 0 4px;
-      background: var(--color-bg-dark);
+      flex-shrink: 0;
+      background: #03000d;
+      border-top: 2px solid var(--color-accent);
     }
-    .dpad-btn {
-      background: var(--color-panel);
-      border: 2px solid var(--color-accent);
-      color: var(--color-primary);
-      font-size: 1.6rem;
+    #cmd-prompt-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border-radius: 4px;
-      -webkit-tap-highlight-color: transparent;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #0d0030;
+    }
+    #cmd-prompt-marker {
+      font-family: 'VT323', monospace;
+      font-size: 1.3rem;
+      color: var(--color-primary);
+      opacity: 0.65;
+      flex-shrink: 0;
       user-select: none;
+    }
+    #cmd-display {
+      flex: 1; min-width: 0;
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      color: var(--color-glow);
+      letter-spacing: 0.03em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #kbd { padding: 3px 6px 4px; display: flex; flex-direction: column; gap: 3px; }
+    .kbd-row { display: flex; gap: 3px; }
+    .kbd-btn {
+      flex: 1;
+      padding: 5px 2px;
+      font-family: 'VT323', monospace;
+      font-size: 0.88rem;
+      background: var(--color-panel);
+      color: var(--color-glow);
+      border: 1px solid rgba(25,25,255,0.5);
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
-    .dpad-btn:active { background: var(--color-accent); color: var(--color-bg-dark); }
-    .dpad-empty { visibility: hidden; }
+    .kbd-btn:active { background: var(--color-accent); color: #000; outline: none; }
+    .kbd-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+    .kbd-btn-dir { background: rgba(25,25,255,0.25); border-color: var(--color-accent); }
+    .kbd-btn-run { background: var(--color-primary); color: #000; flex: 3; font-size: 1rem; letter-spacing: 0.1em; }
+    .kbd-btn-run:active { background: #fff; }
+    .kbd-btn-back { color: #e84449; border-color: rgba(232,68,73,0.5); }
+    #cmd-feedback {
+      padding: 5px 12px 7px;
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      min-height: 30px;
+    }
+    #cmd-feedback.idle  { color: rgba(255,222,0,0.38); }
+    #cmd-feedback.error { color: #e84449; }
+    #cmd-feedback.exec  { color: var(--color-primary); }
   </style>
 </head>
 <body>
@@ -140,12 +175,12 @@
           <h1 style="font-family:'Press Start 2P',monospace;font-size:clamp(2rem,10vw,4rem);
                       color:var(--color-primary);text-shadow:3px 3px 0 var(--color-shadow),0 0 20px rgba(255,222,0,0.5);
                       text-transform:uppercase;letter-spacing:0.08em;line-height:1.2;">
-            SNEK
+            PYTHON
           </h1>
         </div>
         <div class="flex items-center justify-center gap-3 mt-2">
           <div class="flex-grow h-px" style="background:linear-gradient(to right,transparent,var(--color-primary))"></div>
-          <span style="font-size:0.6rem;color:var(--color-primary);text-transform:uppercase;letter-spacing:0.4em;font-family:'VT323',monospace;">Eat. Grow. Survive.</span>
+          <span style="font-size:0.6rem;color:var(--color-primary);text-transform:uppercase;letter-spacing:0.4em;font-family:'VT323',monospace;">Code to move. Think to survive.</span>
           <div class="flex-grow h-px" style="background:linear-gradient(to left,transparent,var(--color-primary))"></div>
         </div>
       </div>
@@ -159,7 +194,7 @@
       </div>
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;opacity:0.6;">
         <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,#fff);"></div>
-        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.3</span>
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.4</span>
         <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,#fff);"></div>
       </div>
     </div>
@@ -186,7 +221,7 @@
         </div>
         <div>
           <h3 style="color:var(--color-glow);text-transform:uppercase;font-weight:bold;border-bottom:1px solid var(--color-shadow);padding-bottom:4px;margin-bottom:12px">Issue a Challenge</h3>
-          <p style="color:#d1d5db;font-size:0.875rem;margin-bottom:12px">Play normally. At the end you'll get a shareable code — friends play the exact same food spawns and try to beat your score.</p>
+          <p style="color:#d1d5db;font-size:0.875rem;margin-bottom:12px">Play normally. At game end you'll get a shareable code — friends face the exact same food spawns and try to beat your score.</p>
           <button onclick="startGame()"
                   style="width:100%;padding:10px;font-family:'VT323',monospace;font-size:1.2rem;
                          text-transform:uppercase;background:transparent;color:var(--color-primary);
@@ -207,19 +242,25 @@
       <div class="p-5 text-sm space-y-4" style="font-family:'VT323',monospace;color:#d1d5db;">
         <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
           <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">GOAL</p>
-          <p style="line-height:1.6">Eat as many dots as possible in 90 seconds. Each dot scores 10 points. Don't hit the walls or your own tail.</p>
+          <p style="line-height:1.6">Eat as many food pellets as you can. Each one scores 10 points. Don't hit the walls or your own tail.</p>
         </div>
         <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
-          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">CONTROLS</p>
-          <p style="line-height:1.6">Arrow keys or WASD to steer. On mobile, swipe in any direction. The game starts on your first move.</p>
+          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">COMMANDS</p>
+          <p style="line-height:1.6;margin-bottom:8px">Type a command in the console and press RUN or Enter to move the snake:</p>
+          <p style="color:var(--color-primary);font-family:'VT323',monospace;font-size:1.05rem;background:#03000d;padding:6px 10px;margin-bottom:8px">snake.move("right", tiles=2)</p>
+          <p style="line-height:1.6">Valid directions: <span style="color:var(--color-primary)">right</span>, <span style="color:var(--color-primary)">left</span>, <span style="color:var(--color-primary)">up</span>, <span style="color:var(--color-primary)">down</span>. tiles=N is optional; omit it to move 1 tile.</p>
         </div>
         <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
-          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">SPEED</p>
-          <p style="line-height:1.6">Every 5 food eaten, the snake speeds up. Manage your corners carefully at high speed.</p>
+          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">TURN TIMER</p>
+          <p style="line-height:1.6">You have <span style="color:var(--color-primary)">1 minute</span> to submit each command. If the timer reaches zero before you run a valid command, the session ends — <span style="color:#e84449">SESSION TIMED OUT</span>.</p>
+        </div>
+        <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
+          <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">ERRORS</p>
+          <p style="line-height:1.6">Invalid syntax shows a console error. You can correct and retry within the remaining turn time.</p>
         </div>
         <div style="border:2px solid var(--color-primary);padding:10px 12px;background:rgba(0,0,0,0.3)">
           <p style="color:var(--color-glow);text-transform:uppercase;font-size:11px;letter-spacing:0.1em;font-weight:bold;margin-bottom:4px">CHALLENGE MODE</p>
-          <p style="line-height:1.6">Food spawns are seeded — same code means the same food positions for everyone. Share your code for a fair async head-to-head.</p>
+          <p style="line-height:1.6">Food spawns are seeded — same code means same positions for everyone. Share your code for a fair async head-to-head.</p>
         </div>
       </div>
       <div class="subpanel-footer"></div>
@@ -282,7 +323,7 @@
   <div id="end-overlay" class="fixed inset-0 z-[150] flex items-center justify-center hidden" style="background:rgba(0,0,0,0.88);">
     <div class="menu-scroll" style="max-width:440px;text-align:center;">
       <div style="padding:32px 24px;">
-        <div id="end-title" style="font-family:'Press Start 2P',monospace;font-size:1.3rem;color:var(--color-primary);text-transform:uppercase;margin-bottom:8px;">GAME OVER</div>
+        <div id="end-title" style="font-family:'Press Start 2P',monospace;font-size:1.2rem;color:var(--color-primary);text-transform:uppercase;margin-bottom:8px;">GAME OVER</div>
         <div style="font-family:'VT323',monospace;font-size:3.5rem;color:var(--color-glow);margin:16px 0;" id="end-score">0</div>
         <div id="end-hs-line" style="font-family:'VT323',monospace;font-size:1.1rem;color:var(--color-primary);margin-bottom:24px;"></div>
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
@@ -313,8 +354,9 @@
         <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:1rem;letter-spacing:0.1em;">SCORE</span>
         <span id="hud-score" style="color:var(--color-glow);font-family:'Press Start 2P',monospace;font-size:0.85rem;">0</span>
       </div>
-      <div>
-        <span id="hud-timer" style="color:var(--color-primary);font-family:'Press Start 2P',monospace;font-size:0.9rem;letter-spacing:0.05em;">1:30</span>
+      <div style="display:flex;flex-direction:column;align-items:center;line-height:1.1;">
+        <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:0.75rem;letter-spacing:0.15em;opacity:0.7;">TURN</span>
+        <span id="hud-timer" style="color:var(--color-glow);font-family:'Press Start 2P',monospace;font-size:0.85rem;">1:00</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:1rem;letter-spacing:0.1em;">BEST</span>
@@ -324,40 +366,70 @@
     <div id="canvas-wrapper">
       <canvas id="game-canvas"></canvas>
     </div>
-    <div id="mobile-dpad">
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" ontouchstart="dpadMove(0,-1);return false;" onclick="dpadMove(0,-1)">▲</button>
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" ontouchstart="dpadMove(-1,0);return false;" onclick="dpadMove(-1,0)">◀</button>
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" ontouchstart="dpadMove(1,0);return false;" onclick="dpadMove(1,0)">▶</button>
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" ontouchstart="dpadMove(0,1);return false;" onclick="dpadMove(0,1)">▼</button>
-      <div class="dpad-empty"></div>
+    <!-- Command Console -->
+    <div id="cmd-console">
+      <div id="cmd-prompt-row">
+        <span id="cmd-prompt-marker">&gt;&gt;&gt;</span>
+        <span id="cmd-display"></span>
+      </div>
+      <div id="cmd-feedback" class="idle">Awaiting command...</div>
+      <div id="kbd">
+        <div class="kbd-row">
+          <button class="kbd-btn" onclick="kbdPress('snake')">snake</button>
+          <button class="kbd-btn" onclick="kbdPress('.')">.</button>
+          <button class="kbd-btn" onclick="kbdPress('move')">move</button>
+          <button class="kbd-btn" onclick="kbdPress('(')">(</button>
+          <button class="kbd-btn" onclick="kbdPress('&quot;')">&quot;</button>
+          <button class="kbd-btn" onclick="kbdPress(')')">)</button>
+          <button class="kbd-btn" onclick="kbdPress(', tiles=')">', tiles=</button>
+        </div>
+        <div class="kbd-row">
+          <button class="kbd-btn kbd-btn-dir" onclick="kbdPress('right')">right</button>
+          <button class="kbd-btn kbd-btn-dir" onclick="kbdPress('left')">left</button>
+          <button class="kbd-btn kbd-btn-dir" onclick="kbdPress('up')">up</button>
+          <button class="kbd-btn kbd-btn-dir" onclick="kbdPress('down')">down</button>
+        </div>
+        <div class="kbd-row">
+          <button class="kbd-btn" onclick="kbdPress('1')">1</button>
+          <button class="kbd-btn" onclick="kbdPress('2')">2</button>
+          <button class="kbd-btn" onclick="kbdPress('3')">3</button>
+          <button class="kbd-btn" onclick="kbdPress('4')">4</button>
+          <button class="kbd-btn" onclick="kbdPress('5')">5</button>
+          <button class="kbd-btn" onclick="kbdPress('6')">6</button>
+          <button class="kbd-btn" onclick="kbdPress('7')">7</button>
+          <button class="kbd-btn" onclick="kbdPress('8')">8</button>
+          <button class="kbd-btn" onclick="kbdPress('9')">9</button>
+          <button class="kbd-btn" onclick="kbdPress('0')">0</button>
+        </div>
+        <div class="kbd-row">
+          <button class="kbd-btn kbd-btn-back" onclick="kbdBackspace()">&#9003;</button>
+          <button class="kbd-btn kbd-btn-run" onclick="submitCommand()">RUN</button>
+        </div>
+      </div>
     </div>
-    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;">&copy; Tacticon Studios 2026 &mdash; v0.0.3</p>
+    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.4</p>
   </div>
 
   <script>
-    // ─── WIPE GUARD ─────────────────────────────────────────────────────────
-    (function(){ var k='XSN_wipe_v1'; if(localStorage.getItem(k)!=='1'){ localStorage.removeItem('XSN_stats'); localStorage.setItem(k,'1'); } })();
+    // ─── WIPE GUARD ──────────────────────────────────────────────────────────
+    (function(){ var k='PYT_wipe_v1'; if(localStorage.getItem(k)!=='1'){ localStorage.removeItem('PYT_stats'); localStorage.setItem(k,'1'); } })();
 
-    // ─── STATS ──────────────────────────────────────────────────────────────
-    const STATS_KEY = 'XSN_stats';
+    // ─── STATS ───────────────────────────────────────────────────────────────
+    const STATS_KEY = 'PYT_stats';
     function loadStats() {
       return JSON.parse(localStorage.getItem(STATS_KEY) || '{"highScore":0,"gamesPlayed":0,"totalScore":0,"history":[]}');
     }
-    function saveGame(score, isChallenge, won) {
+    function saveGame(score, isChallenge) {
       const s = loadStats();
       if (score > s.highScore) s.highScore = score;
       s.gamesPlayed++;
       s.totalScore += score;
-      s.history.unshift({ score, date: Date.now(), isChallenge, won });
+      s.history.unshift({ score, date: Date.now(), isChallenge });
       s.history = s.history.slice(0, 20);
       localStorage.setItem(STATS_KEY, JSON.stringify(s));
     }
 
-    // ─── SEEDED RNG (mulberry32) ─────────────────────────────────────────────
+    // ─── SEEDED RNG (mulberry32) ──────────────────────────────────────────────
     function mulberry32(seed) {
       return function() {
         seed |= 0; seed = seed + 0x6D2B79F5 | 0;
@@ -376,7 +448,6 @@
     function generateSeed() {
       return Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6,'0').toUpperCase();
     }
-
     function acceptChallenge() {
       const raw = document.getElementById('challenge-input').value.trim().toUpperCase();
       const errEl = document.getElementById('challenge-error');
@@ -387,22 +458,28 @@
       errEl.classList.add('hidden');
       startGame(true);
     }
-
     function copyShareText(score) {
       if (!challengeSeed) challengeSeed = generateSeed();
-      const text = `I scored ${score} on SNEK! Challenge code: ${challengeSeed} — same food, can you beat it?`;
+      const text = `I scored ${score} on Python! Challenge code: ${challengeSeed} — same food, can you beat it?`;
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('share-btn');
         if (btn) { btn.innerText = 'Copied!'; setTimeout(() => btn.innerText = 'Share Challenge Code', 2000); }
       });
     }
 
-    // ─── FRONT MENU ──────────────────────────────────────────────────────────
+    // ─── MENUS ───────────────────────────────────────────────────────────────
     function escHtml(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     const PATCH_NOTES = [
+      { v:'v0.0.4', date:'2026-05', notes:[
+        'Renamed from SNEK to Python.',
+        'Overhauled gameplay: real-time controls replaced with tick-based command input.',
+        'Type snake.move("direction", tiles=N) to move the snake. tiles is optional; omit it to move 1 tile.',
+        '1 minute per turn — run out of time and the session ends.',
+        'Invalid commands show a console error and allow retry within the remaining time.',
+      ]},
       { v:'v0.0.3', date:'2026-05', notes:['Seed no longer displayed on the end screen.'] },
       { v:'v0.0.2', date:'2026-05', notes:['First Telegram release.'] },
       { v:'v0.0.1', date:'2026-05', notes:['Initial release.'] },
@@ -451,7 +528,7 @@
       if (name === 'patchnotes') renderPatchNotes();
       if (!fromPopstate && name !== 'main') history.pushState({ panel: name }, document.title);
     }
-    window.addEventListener('popstate', function(e) {
+    window.addEventListener('popstate', function() {
       const ov = document.getElementById('start-overlay');
       if (ov && !ov.classList.contains('hidden')) showStartPanel('main', true);
     });
@@ -492,26 +569,23 @@
       document.getElementById('sfx-toggle').innerText = sfxEnabled ? 'ON' : 'OFF';
     }
     const SFX = {
-      eat() { _tone(523, 'square', 0.07, 0.005, 0.02, 0.04); _tone(784, 'square', 0.05, 0.005, 0.01, 0.03, 0.03); },
-      die() { [220,196,175,156].forEach((f,i) => _tone(f, 'sawtooth', 0.1, 0.01, 0.08, 0.06, i*0.1)); },
-      tick() { _tone(880, 'square', 0.04, 0.002, 0.008, 0.015); },
+      eat()    { _tone(523,'square',0.07,0.005,0.02,0.04); _tone(784,'square',0.05,0.005,0.01,0.03,0.03); },
+      die()    { [220,196,175,156].forEach((f,i) => _tone(f,'sawtooth',0.1,0.01,0.08,0.06,i*0.1)); },
+      submit() { _tone(660,'square',0.04,0.002,0.01,0.03); },
+      error()  { _tone(180,'sawtooth',0.06,0.01,0.05,0.08); },
+      warn()   { _tone(330,'square',0.04,0.005,0.015,0.03); },
     };
 
-    // ─── GAME CONSTANTS ──────────────────────────────────────────────────────
-    const GRID        = 20;
-    const TIMER_SECS  = 90;
-    const BASE_SPEED  = 200;
-    const MIN_SPEED   = 80;
-    const SPEED_STEP  = 15;
-    const SPEED_EVERY = 5;
-    const PTS_FOOD    = 10;
+    // ─── CONSTANTS ───────────────────────────────────────────────────────────
+    const GRID      = 20;
+    const TURN_SECS = 60;
+    const PTS_FOOD  = 10;
+    const TILE_MS   = 150;
 
     // ─── GAME STATE ──────────────────────────────────────────────────────────
-    let snake, dir, nextDir, food, foodQueue, foodQueueIdx;
-    let score, alive, gameStarted;
-    let speed, moveInterval;
-    let foodEaten;
-    let timerLeft, timerInterval;
+    let snake, food, foodQueue, foodQueueIdx;
+    let score, alive, foodEaten;
+    let turnTimeLeft, turnTimer, currentTurnSecs;
 
     // ─── CANVAS ──────────────────────────────────────────────────────────────
     function resizeCanvas() {
@@ -522,13 +596,12 @@
       canvas.height = size;
     }
 
-    // ─── FOOD QUEUE ──────────────────────────────────────────────────────────
+    // ─── FOOD ────────────────────────────────────────────────────────────────
     function buildFoodQueue() {
       const q = [];
       for (let i = 0; i < 600; i++) q.push({ x: Math.floor(rng() * GRID), y: Math.floor(rng() * GRID) });
       return q;
     }
-
     function spawnFood() {
       while (foodQueueIdx < foodQueue.length) {
         const pos = foodQueue[foodQueueIdx++];
@@ -559,8 +632,7 @@
 
       if (food) {
         ctx.save();
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 10; ctx.shadowColor = '#ffffff';
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(food.x * cs + cs * 0.5, food.y * cs + cs * 0.5, cs * 0.18, 0, Math.PI * 2);
@@ -570,13 +642,10 @@
 
       const pad = cs * 0.1;
       snake.forEach((seg, i) => {
-        const x = seg.x * cs + pad;
-        const y = seg.y * cs + pad;
-        const w = cs - pad * 2;
+        const x = seg.x * cs + pad, y = seg.y * cs + pad, w = cs - pad * 2;
         if (i === 0) {
           ctx.save();
-          ctx.shadowBlur = 14;
-          ctx.shadowColor = '#ffde00';
+          ctx.shadowBlur = 14; ctx.shadowColor = '#ffde00';
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(x, y, w, w);
           ctx.restore();
@@ -586,92 +655,156 @@
           ctx.fillRect(x, y, w, w);
         }
       });
-
-      if (!gameStarted && alive) {
-        const fs = Math.max(8, Math.floor(cs * 0.5));
-        ctx.fillStyle = 'rgba(0,0,0,0.65)';
-        ctx.fillRect(0, sz * 0.4, sz, sz * 0.2);
-        ctx.fillStyle = '#ffde00';
-        ctx.font = `${fs}px 'Press Start 2P', monospace`;
-        ctx.textAlign = 'center';
-        ctx.fillText('PRESS ANY KEY', sz / 2, sz * 0.525);
-        ctx.textAlign = 'left';
-      }
     }
 
     // ─── HUD ─────────────────────────────────────────────────────────────────
     function updateHUD() {
       document.getElementById('hud-score').innerText = score;
       document.getElementById('hud-best').innerText = loadStats().highScore;
-      const m = Math.floor(timerLeft / 60);
-      const s = timerLeft % 60;
-      document.getElementById('hud-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+      const m = Math.floor(turnTimeLeft / 60);
+      const s = turnTimeLeft % 60;
+      const timerEl = document.getElementById('hud-timer');
+      timerEl.innerText = `${m}:${s.toString().padStart(2,'0')}`;
+      timerEl.style.color = turnTimeLeft <= 10 ? '#e84449' : 'var(--color-glow)';
     }
 
-    // ─── GAME LOOP ────────────────────────────────────────────────────────────
-    function setMoveSpeed(ms) {
-      speed = ms;
-      if (moveInterval) { clearInterval(moveInterval); moveInterval = setInterval(gameTick, speed); }
+    // ─── CONSOLE UI ──────────────────────────────────────────────────────────
+    let cmdBuf = '';
+    function updateCmdDisplay() {
+      const el = document.getElementById('cmd-display');
+      el.textContent = cmdBuf || 'snake.move("right")';
+      el.style.opacity = cmdBuf ? '1' : '0.35';
+    }
+    function kbdPress(t) {
+      cmdBuf += t;
+      updateCmdDisplay();
+    }
+    function kbdBackspace() {
+      cmdBuf = cmdBuf.slice(0, -1);
+      updateCmdDisplay();
+    }
+    function setConsoleLocked(locked) {
+      document.querySelectorAll('.kbd-btn').forEach(b => b.disabled = locked);
+    }
+    function setFeedback(type, html) {
+      const el = document.getElementById('cmd-feedback');
+      el.className = type;
+      el.innerHTML = html;
     }
 
-    function gameTick() {
-      if (!alive) return;
-      dir = { ...nextDir };
-      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    // ─── COMMAND PARSER ──────────────────────────────────────────────────────
+    const DIR_MAP = {
+      right:{x:1,y:0}, left:{x:-1,y:0}, up:{x:0,y:-1}, down:{x:0,y:1}
+    };
+    function parseCommand(raw) {
+      const m = raw.trim().match(/^snake\.move\(\s*["'](\w+)["']\s*(?:,\s*tiles\s*=\s*(\d+))?\s*\)$/i);
+      if (!m) return null;
+      const d = DIR_MAP[m[1].toLowerCase()];
+      if (!d) return null;
+      const tiles = m[2] ? parseInt(m[2], 10) : 1;
+      if (tiles < 1 || tiles > 50) return null;
+      return { dir: d, tiles };
+    }
 
-      if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID ||
-          snake.some(s => s.x === head.x && s.y === head.y)) {
-        endGame(false);
-        return;
-      }
-
+    // ─── MOVEMENT ────────────────────────────────────────────────────────────
+    function moveTick(d) {
+      const head = { x: snake[0].x + d.x, y: snake[0].y + d.y };
+      if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID) return false;
+      if (snake.some(s => s.x === head.x && s.y === head.y)) return false;
       snake.unshift(head);
-
       if (food && head.x === food.x && head.y === food.y) {
         foodEaten++;
         score += PTS_FOOD;
         SFX.eat();
-        if (foodEaten % SPEED_EVERY === 0) setMoveSpeed(Math.max(MIN_SPEED, speed - SPEED_STEP));
         food = spawnFood();
         updateHUD();
       } else {
         snake.pop();
       }
-
-      draw();
+      return true;
     }
 
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        timerLeft--;
-        if (timerLeft <= 10 && timerLeft > 0) SFX.tick();
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    async function executeCommand(parsed) {
+      setConsoleLocked(true);
+      clearInterval(turnTimer); turnTimer = null;
+      setFeedback('exec', 'EXECUTING...');
+
+      for (let i = 0; i < parsed.tiles; i++) {
+        if (!alive) return;
+        const ok = moveTick(parsed.dir);
+        draw();
+        if (!ok) {
+          await sleep(400);
+          endGame('collision');
+          return;
+        }
+        await sleep(TILE_MS);
+      }
+
+      if (alive) {
+        cmdBuf = ''; updateCmdDisplay();
+        setConsoleLocked(false);
+        setFeedback('idle', 'Awaiting command...');
+        startTurnTimer();
+      }
+    }
+
+    // ─── SUBMIT ──────────────────────────────────────────────────────────────
+    function submitCommand() {
+      if (!alive) return;
+      const raw = cmdBuf;
+      const parsed = parseCommand(raw);
+      if (!parsed) {
+        SFX.error();
+        setFeedback('error', `SyntaxError: unrecognised command &nbsp;—&nbsp; Expected: <span style="color:var(--color-primary)">snake.move("right", tiles=N)</span>`);
+        return;
+      }
+      SFX.submit();
+      executeCommand(parsed);
+    }
+
+    // ─── TURN TIMER ──────────────────────────────────────────────────────────
+    function startTurnTimer() {
+      turnTimeLeft = currentTurnSecs;
+      currentTurnSecs = Math.max(10, currentTurnSecs - 1);
+      updateHUD();
+      turnTimer = setInterval(() => {
+        if (!alive) { clearInterval(turnTimer); return; }
+        turnTimeLeft--;
         updateHUD();
-        if (timerLeft <= 0) endGame(true);
+        if (turnTimeLeft <= 10 && turnTimeLeft > 0) SFX.warn();
+        if (turnTimeLeft <= 0) {
+          clearInterval(turnTimer); turnTimer = null;
+          sessionTimeout();
+        }
       }, 1000);
     }
 
-    function firstMove() {
-      if (gameStarted || !alive) return;
-      gameStarted = true;
-      moveInterval = setInterval(gameTick, speed);
-      startTimer();
+    function sessionTimeout() {
+      alive = false;
+      setConsoleLocked(true);
+      currentScore = score;
+      saveGame(score, isChallengeMode);
+      setTimeout(() => showEndScreen(score, 'timeout'), 200);
     }
 
     // ─── END GAME ────────────────────────────────────────────────────────────
-    function endGame(timeUp) {
+    function endGame(reason) {
       alive = false;
-      clearInterval(moveInterval); moveInterval = null;
-      clearInterval(timerInterval); timerInterval = null;
-      if (!timeUp) SFX.die();
+      clearInterval(turnTimer); turnTimer = null;
+      setConsoleLocked(true);
+      if (reason === 'collision') SFX.die();
       currentScore = score;
-      saveGame(score, isChallengeMode, timeUp);
-      setTimeout(() => showEndScreen(score, timeUp), timeUp ? 200 : 700);
+      saveGame(score, isChallengeMode);
+      setTimeout(() => showEndScreen(score, reason), reason === 'collision' ? 700 : 200);
     }
 
-    function showEndScreen(sc, timeUp) {
+    function showEndScreen(sc, reason) {
       const stats = loadStats();
       const isNewHigh = stats.gamesPlayed > 1 && sc > 0 && sc === stats.highScore;
-      document.getElementById('end-title').innerText = timeUp ? "TIME'S UP!" : 'GAME OVER';
+      document.getElementById('end-title').innerText = reason === 'timeout' ? 'SESSION TIMED OUT' : 'GAME OVER';
       document.getElementById('end-score').innerText = sc;
       document.getElementById('end-hs-line').innerText = isNewHigh ? '★ NEW HIGH SCORE ★' : `Best: ${stats.highScore}`;
       document.getElementById('end-overlay').classList.remove('hidden');
@@ -681,64 +814,21 @@
       document.getElementById('end-overlay').classList.add('hidden');
       initGame();
     }
-
     function goToMenu() {
       document.getElementById('end-overlay').classList.add('hidden');
       document.getElementById('hud').style.display = 'none';
       document.getElementById('canvas-wrapper').style.display = 'none';
-      document.getElementById('mobile-dpad').style.display = 'none';
+      document.getElementById('cmd-console').style.display = 'none';
       document.getElementById('start-overlay').classList.remove('hidden');
       showStartPanel('main');
     }
-
-    // ─── CONTROLS ────────────────────────────────────────────────────────────
-    const KEY_DIRS = {
-      ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0},
-      w:{x:0,y:-1}, s:{x:0,y:1}, a:{x:-1,y:0}, d:{x:1,y:0},
-      W:{x:0,y:-1}, S:{x:0,y:1}, A:{x:-1,y:0}, D:{x:1,y:0},
-    };
-
-    document.addEventListener('keydown', e => {
-      const d = KEY_DIRS[e.key];
-      if (!d) return;
-      e.preventDefault();
-      if (d.x === -dir.x && d.y === -dir.y) return;
-      nextDir = d;
-      firstMove();
-    });
-
-    function dpadMove(dx, dy) {
-      const d = {x: dx, y: dy};
-      if (d.x === -dir.x && d.y === -dir.y) return;
-      nextDir = d;
-      firstMove();
-    }
-
-    let touchStartX, touchStartY;
-    const gameCanvas = document.getElementById('game-canvas');
-    gameCanvas.addEventListener('touchstart', e => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-    gameCanvas.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      const d = Math.abs(dx) > Math.abs(dy)
-        ? (dx > 0 ? {x:1,y:0} : {x:-1,y:0})
-        : (dy > 0 ? {x:0,y:1} : {x:0,y:-1});
-      if (d.x === -dir.x && d.y === -dir.y) return;
-      nextDir = d;
-      firstMove();
-    }, { passive: true });
 
     // ─── GAME START ──────────────────────────────────────────────────────────
     function startGame(fromChallenge=false) {
       document.getElementById('start-overlay').classList.add('hidden');
       document.getElementById('hud').style.display = 'flex';
       document.getElementById('canvas-wrapper').style.display = 'flex';
-      if (window.matchMedia('(pointer: coarse)').matches)
-        document.getElementById('mobile-dpad').style.display = 'grid';
+      document.getElementById('cmd-console').style.display = 'block';
       if (!fromChallenge) {
         challengeSeed = generateSeed();
         rng = mulberry32(parseInt(challengeSeed, 16));
@@ -750,22 +840,21 @@
 
     // ─── INIT ────────────────────────────────────────────────────────────────
     function initGame() {
-      snake      = [{x:10,y:9},{x:9,y:9},{x:8,y:9}];
-      dir        = {x:1,y:0};
-      nextDir    = {x:1,y:0};
-      score      = 0;
-      alive      = true;
-      gameStarted = false;
-      foodEaten  = 0;
-      speed      = BASE_SPEED;
-      timerLeft  = TIMER_SECS;
-      foodQueueIdx = 0;
-      foodQueue  = buildFoodQueue();
-      food       = spawnFood();
-      clearInterval(moveInterval); moveInterval = null;
-      clearInterval(timerInterval); timerInterval = null;
+      snake           = [{x:10,y:9},{x:9,y:9},{x:8,y:9}];
+      score           = 0;
+      alive           = true;
+      foodEaten       = 0;
+      currentTurnSecs = TURN_SECS;
+      foodQueueIdx    = 0;
+      foodQueue    = buildFoodQueue();
+      food         = spawnFood();
+      clearInterval(turnTimer); turnTimer = null;
+      cmdBuf = ''; updateCmdDisplay();
+      setConsoleLocked(false);
+      setFeedback('idle', 'Awaiting command...');
       updateHUD();
       draw();
+      startTurnTimer();
     }
 
     window.addEventListener('resize', () => {
