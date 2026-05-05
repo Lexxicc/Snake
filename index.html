@@ -5,6 +5,13 @@
   <meta name="author" content="lexxicc">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Python v0.0.8</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffd343">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Python">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
@@ -55,6 +62,14 @@
       font-weight: bold; text-transform: uppercase; font-style: italic;
     }
     .subpanel-footer { position: sticky; bottom: 0; height: 6px; background: var(--color-bg-dark); }
+    .logo-wrap {
+      min-height: 140px; display: flex; align-items: center;
+      justify-content: center; padding: 16px 0;
+    }
+    @media (max-height: 680px) {
+      .logo-wrap { min-height: 80px; padding: 8px 0; }
+      .start-menu-btn { padding-top: 9px; padding-bottom: 9px; }
+    }
 
     body {
       background-color: var(--color-bg-dark);
@@ -222,7 +237,7 @@
     <!-- ── MAIN ── -->
     <div id="start-main" class="menu-scroll relative z-10">
       <div class="text-center pt-4 pb-4 px-6" style="border-bottom:4px solid var(--color-shadow);">
-        <div style="min-height:140px;display:flex;align-items:center;justify-content:center;padding:16px 0;">
+        <div class="logo-wrap">
           <svg viewBox="0 0 200 72" style="width:min(100%,280px);height:auto;display:block;filter:drop-shadow(0 0 12px rgba(55,118,171,0.6))">
             <use href="#pyt-logo"/>
           </svg>
@@ -249,7 +264,7 @@
       </div>
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;opacity:0.6;">
         <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,#fff);"></div>
-        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.7</span>
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.9</span>
         <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,#fff);"></div>
       </div>
     </div>
@@ -544,6 +559,7 @@
     }
 
     const PATCH_NOTES = [
+      { v:'v0.0.9', date:'2026-05', notes:['Mobile portrait refit — no-scroll layout on small screens.'] },
       { v:'v0.0.8', date:'2026-05', notes:['Python-inspired colour palette; game shell border added.'] },
     { v:'v0.0.7', date:'2026-05', notes:['Version bump.'] },
       { v:'v0.0.6', date:'2026-05', notes:['Fixed goToMenu not clearing the turn timer — ghost tick no longer fires after returning to menu.'] },
