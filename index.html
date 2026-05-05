@@ -4,26 +4,26 @@
   <meta charset="UTF-8">
   <meta name="author" content="lexxicc">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Python v0.0.7</title>
+  <title>Python v0.0.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
     :root {
-      --color-bg-dark:  #000000;
-      --color-panel:    #0c0024;
-      --color-primary:  #ffde00;
-      --color-accent:   #1919ff;
+      --color-bg-dark:  #08131e;
+      --color-panel:    #0d1e2e;
+      --color-primary:  #ffd343;
+      --color-accent:   #3776ab;
       --color-glow:     #ffffff;
-      --color-shadow:   #06000e;
+      --color-shadow:   #04080d;
     }
 
     .menu-scroll {
       background: linear-gradient(180deg, var(--color-bg-dark) 0%, var(--color-panel) 45%, var(--color-panel) 55%, var(--color-bg-dark) 100%);
       border: 6px solid var(--color-primary);
-      box-shadow: 0 0 6px 2px rgba(255,222,0,0.55),
-                  0 0 28px 4px rgba(255,222,0,0.28),
-                  0 0 70px rgba(255,222,0,0.12),
+      box-shadow: 0 0 6px 2px rgba(255,211,67,0.55),
+                  0 0 28px 4px rgba(55,118,171,0.35),
+                  0 0 70px rgba(55,118,171,0.15),
                   inset 0 0 40px rgba(0,0,0,0.45);
       width: 640px; max-width: 92vw; max-height: 92dvh;
       overflow-y: auto; scrollbar-width: none;
@@ -62,6 +62,7 @@
       color: #fff;
       height: 100dvh;
       overflow: hidden;
+      overscroll-behavior: none;
       display: flex;
       flex-direction: column;
       margin: 0;
@@ -75,6 +76,8 @@
       flex: 1; min-height: 0;
       display: flex; flex-direction: column;
       overflow: hidden;
+      border: 6px solid #3776ab;
+      box-sizing: border-box;
     }
     #hud {
       display: none;
@@ -131,6 +134,14 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    #cmd-cursor {
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      color: var(--color-glow);
+      animation: blink 1s step-start infinite;
+      flex-shrink: 0;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
     #kbd { padding: 3px 6px 4px; display: flex; flex-direction: column; gap: 3px; }
     .kbd-row { display: flex; gap: 3px; }
     .kbd-btn {
@@ -160,12 +171,50 @@
       font-size: 1rem;
       min-height: 30px;
     }
-    #cmd-feedback.idle  { color: rgba(255,222,0,0.38); }
+    #cmd-feedback.idle  { color: rgba(255,211,67,0.38); }
     #cmd-feedback.error { color: #e84449; }
     #cmd-feedback.exec  { color: var(--color-primary); }
+    #ingame-menu-btn {
+      background: transparent; border: none; cursor: pointer;
+      padding: 4px 6px; display: flex; flex-direction: column;
+      gap: 4px; flex-shrink: 0;
+    }
+    #ingame-menu-btn span {
+      display: block; width: 22px; height: 2px;
+      background: var(--color-glow); border-radius: 1px;
+    }
+    #ingame-overlay {
+      display: none; position: absolute; inset: 0; z-index: 100;
+      background: rgba(8,19,30,0.94);
+      flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    }
+    #ingame-overlay.open { display: flex; }
+    .ingame-overlay-btn {
+      width: min(280px, 80vw); padding: 16px 24px;
+      font-family: 'VT323', monospace; font-size: 1.4rem;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--color-glow); background: var(--color-panel);
+      border: 2px solid var(--color-accent); cursor: pointer;
+      text-align: center;
+    }
+    .ingame-overlay-btn:active { background: var(--color-accent); color: #000; }
   </style>
 </head>
 <body>
+
+  <!-- ── PYT LOGO SYMBOL ── -->
+  <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="pyt-logo" viewBox="0 0 200 72">
+        <rect width="200" height="72" rx="6" fill="#0d0d0d"/>
+        <rect width="3" height="72" rx="1.5" fill="#3776ab"/>
+        <text x="12" y="30" font-family="'Courier New',Courier,monospace" font-size="19" font-weight="bold">
+          <tspan fill="#3776ab">game_name</tspan><tspan fill="#9ca3af"> =</tspan>
+        </text>
+        <text x="50" y="56" font-family="'Courier New',Courier,monospace" font-size="19" font-weight="bold" fill="#ffd343">"Python"</text>
+      </symbol>
+    </defs>
+  </svg>
 
   <!-- ═══ START OVERLAY ═══ -->
   <div id="start-overlay" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:#000;">
@@ -173,17 +222,10 @@
     <!-- ── MAIN ── -->
     <div id="start-main" class="menu-scroll relative z-10">
       <div class="text-center pt-4 pb-4 px-6" style="border-bottom:4px solid var(--color-shadow);">
-        <div style="min-height:140px;display:flex;align-items:center;justify-content:center;">
-          <h1 style="font-family:'Press Start 2P',monospace;font-size:clamp(2rem,10vw,4rem);
-                      color:var(--color-primary);text-shadow:3px 3px 0 var(--color-shadow),0 0 20px rgba(255,222,0,0.5);
-                      text-transform:uppercase;letter-spacing:0.08em;line-height:1.2;">
-            PYTHON
-          </h1>
-        </div>
-        <div class="flex items-center justify-center gap-3 mt-2">
-          <div class="flex-grow h-px" style="background:linear-gradient(to right,transparent,var(--color-primary))"></div>
-          <span style="font-size:0.6rem;color:var(--color-primary);text-transform:uppercase;letter-spacing:0.4em;font-family:'VT323',monospace;">Code to move. Think to survive.</span>
-          <div class="flex-grow h-px" style="background:linear-gradient(to left,transparent,var(--color-primary))"></div>
+        <div style="min-height:140px;display:flex;align-items:center;justify-content:center;padding:16px 0;">
+          <svg viewBox="0 0 200 72" style="width:min(100%,280px);height:auto;display:block;filter:drop-shadow(0 0 12px rgba(55,118,171,0.6))">
+            <use href="#pyt-logo"/>
+          </svg>
         </div>
       </div>
       <div class="flex flex-col">
@@ -339,6 +381,7 @@
   <div id="end-overlay" class="fixed inset-0 z-[150] flex items-center justify-center hidden" style="background:rgba(0,0,0,0.88);">
     <div class="menu-scroll" style="max-width:440px;text-align:center;">
       <div style="padding:32px 24px;">
+        <svg viewBox="0 0 200 72" style="width:min(100%,180px);height:auto;display:block;margin:0 auto 16px"><use href="#pyt-logo"/></svg>
         <div id="end-title" style="font-family:'Press Start 2P',monospace;font-size:1.2rem;color:var(--color-primary);text-transform:uppercase;margin-bottom:8px;">GAME OVER</div>
         <div style="font-family:'VT323',monospace;font-size:3.5rem;color:var(--color-glow);margin:16px 0;" id="end-score">0</div>
         <div id="end-hs-line" style="font-family:'VT323',monospace;font-size:1.1rem;color:var(--color-primary);margin-bottom:24px;"></div>
@@ -364,20 +407,19 @@
   </div>
 
   <!-- GAME CONTENT -->
-  <div class="game-shell w-full">
+  <div class="game-shell w-full" style="position:relative">
     <div id="hud">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:1rem;letter-spacing:0.1em;">SCORE</span>
         <span id="hud-score" style="color:var(--color-glow);font-family:'Press Start 2P',monospace;font-size:0.85rem;">0</span>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:center;line-height:1.1;">
-        <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:0.75rem;letter-spacing:0.15em;opacity:0.7;">TURN</span>
-        <span id="hud-timer" style="color:var(--color-glow);font-family:'Press Start 2P',monospace;font-size:0.85rem;">1:00</span>
-      </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="color:var(--color-primary);font-family:'VT323',monospace;font-size:1rem;letter-spacing:0.1em;">BEST</span>
         <span id="hud-best" style="color:var(--color-glow);font-family:'Press Start 2P',monospace;font-size:0.85rem;">0</span>
       </div>
+      <button id="ingame-menu-btn" onclick="toggleIngameMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
     <div id="canvas-wrapper">
       <canvas id="game-canvas"></canvas>
@@ -387,6 +429,7 @@
       <div id="cmd-prompt-row">
         <span id="cmd-prompt-marker">&gt;&gt;&gt;</span>
         <span id="cmd-display"></span>
+        <span id="cmd-cursor">_</span>
       </div>
       <div id="cmd-feedback" class="idle">Awaiting command...</div>
       <div id="kbd">
@@ -425,18 +468,25 @@
           </div>
         </div>
         <div class="kbd-row">
-          <button class="kbd-btn kbd-btn-back" onclick="kbdBackspace()">&#9003;</button>
           <button class="kbd-btn kbd-btn-run" onclick="submitCommand()">RUN</button>
+          <button class="kbd-btn" style="flex:2" onclick="kbdPress(' ')">SPACE</button>
+          <button class="kbd-btn kbd-btn-back" onclick="kbdBackspace()">&#9003;</button>
         </div>
       </div>
     </div>
-    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.7</p>
+    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.8</p>
+    <!-- In-game menu overlay -->
+    <div id="ingame-overlay">
+      <button class="ingame-overlay-btn" onclick="closeIngameMenu();goToMenu()">Return to Main Menu</button>
+      <button class="ingame-overlay-btn" onclick="closeIngameMenu();showIngameSettings()">Settings</button>
+      <button class="ingame-overlay-btn" style="border-color:rgba(55,118,171,0.4);color:rgba(255,255,255,0.5);font-size:1.1rem;" onclick="closeIngameMenu()">Resume</button>
+    </div>
   </div>
 
   <script>
 
     // ─── STATS ───────────────────────────────────────────────────────────────
-    const STATS_KEY = 'PYT_stats';
+    const STATS_KEY = 'PY_stats';
     function loadStats() {
       return JSON.parse(localStorage.getItem(STATS_KEY) || '{"highScore":0,"gamesPlayed":0,"totalScore":0,"history":[]}');
     }
@@ -494,7 +544,8 @@
     }
 
     const PATCH_NOTES = [
-      { v:'v0.0.7', date:'2026-05', notes:['Version bump.'] },
+      { v:'v0.0.8', date:'2026-05', notes:['Python-inspired colour palette; game shell border added.'] },
+    { v:'v0.0.7', date:'2026-05', notes:['Version bump.'] },
       { v:'v0.0.6', date:'2026-05', notes:['Fixed goToMenu not clearing the turn timer — ghost tick no longer fires after returning to menu.'] },
       { v:'v0.0.5', date:'2026-05', notes:['Grid line colour updated to gold.'] },
       { v:'v0.0.4', date:'2026-05', notes:[
@@ -616,14 +667,12 @@
 
     // ─── CONSTANTS ───────────────────────────────────────────────────────────
     const GRID      = 20;
-    const TURN_SECS = 60;
     const PTS_FOOD  = 10;
     const TILE_MS   = 150;
 
     // ─── GAME STATE ──────────────────────────────────────────────────────────
     let snake, food, foodQueue, foodQueueIdx;
     let score, alive, foodEaten;
-    let turnTimeLeft, turnTimer, currentTurnSecs;
 
     // ─── CANVAS ──────────────────────────────────────────────────────────────
     function resizeCanvas() {
@@ -699,19 +748,23 @@
     function updateHUD() {
       document.getElementById('hud-score').innerText = score;
       document.getElementById('hud-best').innerText = loadStats().highScore;
-      const m = Math.floor(turnTimeLeft / 60);
-      const s = turnTimeLeft % 60;
-      const timerEl = document.getElementById('hud-timer');
-      timerEl.innerText = `${m}:${s.toString().padStart(2,'0')}`;
-      timerEl.style.color = turnTimeLeft <= 10 ? '#e84449' : 'var(--color-glow)';
     }
 
     // ─── CONSOLE UI ──────────────────────────────────────────────────────────
     let cmdBuf = '';
+    let feedbackTimer = null;
     function updateCmdDisplay() {
       const el = document.getElementById('cmd-display');
-      el.textContent = cmdBuf || 'snake.move("right")';
-      el.style.opacity = cmdBuf ? '1' : '0.35';
+      const cursor = document.getElementById('cmd-cursor');
+      if (cmdBuf) {
+        el.textContent = cmdBuf;
+        el.style.opacity = '1';
+        cursor.style.display = 'inline';
+      } else {
+        el.textContent = 'snake.move("right")';
+        el.style.opacity = '0.35';
+        cursor.style.display = 'none';
+      }
     }
     function kbdPress(t) {
       cmdBuf += t;
@@ -771,7 +824,6 @@
 
     async function executeCommand(parsed) {
       setConsoleLocked(true);
-      clearInterval(turnTimer); turnTimer = null;
       setFeedback('exec', 'EXECUTING...');
 
       for (let i = 0; i < parsed.tiles; i++) {
@@ -790,7 +842,6 @@
         cmdBuf = ''; updateCmdDisplay();
         setConsoleLocked(false);
         setFeedback('idle', 'Awaiting command...');
-        startTurnTimer();
       }
     }
 
@@ -802,41 +853,17 @@
       if (!parsed) {
         SFX.error();
         setFeedback('error', `SyntaxError: unrecognised command &nbsp;—&nbsp; Expected: <span style="color:var(--color-primary)">snake.move("right", tiles=N)</span>`);
+        clearTimeout(feedbackTimer);
+        feedbackTimer = setTimeout(() => setFeedback('idle', 'Awaiting command...'), 2000);
         return;
       }
       SFX.submit();
       executeCommand(parsed);
     }
 
-    // ─── TURN TIMER ──────────────────────────────────────────────────────────
-    function startTurnTimer() {
-      turnTimeLeft = currentTurnSecs;
-      currentTurnSecs = Math.max(10, currentTurnSecs - 1);
-      updateHUD();
-      turnTimer = setInterval(() => {
-        if (!alive) { clearInterval(turnTimer); return; }
-        turnTimeLeft--;
-        updateHUD();
-        if (turnTimeLeft <= 10 && turnTimeLeft > 0) SFX.warn();
-        if (turnTimeLeft <= 0) {
-          clearInterval(turnTimer); turnTimer = null;
-          sessionTimeout();
-        }
-      }, 1000);
-    }
-
-    function sessionTimeout() {
-      alive = false;
-      setConsoleLocked(true);
-      currentScore = score;
-      saveGame(score, isChallengeMode);
-      setTimeout(() => showEndScreen(score, 'timeout'), 200);
-    }
-
     // ─── END GAME ────────────────────────────────────────────────────────────
     function endGame(reason) {
       alive = false;
-      clearInterval(turnTimer); turnTimer = null;
       setConsoleLocked(true);
       if (reason === 'collision') SFX.die();
       currentScore = score;
@@ -857,9 +884,23 @@
       document.getElementById('end-overlay').classList.add('hidden');
       initGame();
     }
+    function toggleIngameMenu() {
+      document.getElementById('ingame-overlay').classList.toggle('open');
+    }
+    function closeIngameMenu() {
+      document.getElementById('ingame-overlay').classList.remove('open');
+    }
+    function showIngameSettings() {
+      document.getElementById('hud').style.display = 'none';
+      document.getElementById('canvas-wrapper').style.display = 'none';
+      document.getElementById('cmd-console').style.display = 'none';
+      document.getElementById('start-overlay').classList.remove('hidden');
+      showStartPanel('settings');
+    }
+
     function goToMenu() {
-      clearInterval(turnTimer); turnTimer = null;
       document.getElementById('end-overlay').classList.add('hidden');
+      document.getElementById('ingame-overlay').classList.remove('open');
       document.getElementById('hud').style.display = 'none';
       document.getElementById('canvas-wrapper').style.display = 'none';
       document.getElementById('cmd-console').style.display = 'none';
@@ -885,20 +926,17 @@
     // ─── INIT ────────────────────────────────────────────────────────────────
     function initGame() {
       snake           = [{x:10,y:9},{x:9,y:9},{x:8,y:9}];
-      score           = 0;
-      alive           = true;
-      foodEaten       = 0;
-      currentTurnSecs = TURN_SECS;
-      foodQueueIdx    = 0;
+      score        = 0;
+      alive        = true;
+      foodEaten    = 0;
+      foodQueueIdx = 0;
       foodQueue    = buildFoodQueue();
       food         = spawnFood();
-      clearInterval(turnTimer); turnTimer = null;
       cmdBuf = ''; updateCmdDisplay();
       setConsoleLocked(false);
       setFeedback('idle', 'Awaiting command...');
       updateHUD();
       draw();
-      startTurnTimer();
     }
 
     window.addEventListener('resize', () => {
