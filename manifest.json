@@ -1,0 +1,9 @@
+{
+  "name": "Python",
+  "short_name": "Python",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08131e",
+  "theme_color": "#ffd343",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
