@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="author" content="lexxicc">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Python v0.0.12</title>
+  <title>Python v0.0.13</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffd343">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,6 +43,7 @@
       background: transparent; border: none; border-bottom: 2px solid var(--color-shadow);
       cursor: pointer; text-shadow: 2px 2px 0 var(--color-shadow);
       text-align: left; transition: background 0.12s, padding-left 0.12s;
+      touch-action: manipulation;
     }
     .start-menu-btn:hover { background: rgba(255,222,0,0.1); color: #fff; padding-left: 28px; }
     .start-menu-btn:last-child { border-bottom: none; }
@@ -50,6 +51,7 @@
       font-family: 'VT323', monospace; font-size: 1.1rem; text-transform: uppercase;
       padding: 6px 14px; color: var(--color-primary); background: transparent;
       border: 4px solid var(--color-primary); cursor: pointer; letter-spacing: 0.05em;
+      touch-action: manipulation;
     }
     .start-back-btn:hover { background: var(--color-primary); color: var(--color-bg-dark); }
     .subpanel-header {
@@ -192,7 +194,7 @@
     #ingame-menu-btn {
       background: transparent; border: none; cursor: pointer;
       padding: 4px 6px; display: flex; flex-direction: column;
-      gap: 4px; flex-shrink: 0;
+      gap: 4px; flex-shrink: 0; touch-action: manipulation;
     }
     #ingame-menu-btn span {
       display: block; width: 22px; height: 2px;
@@ -210,9 +212,13 @@
       text-transform: uppercase; letter-spacing: 0.07em;
       color: var(--color-glow); background: var(--color-panel);
       border: 2px solid var(--color-accent); cursor: pointer;
-      text-align: center;
+      text-align: center; touch-action: manipulation;
     }
     .ingame-overlay-btn:active { background: var(--color-accent); color: #000; }
+    @media (pointer: coarse) {
+      .ingame-overlay-btn { padding: 20px 28px; font-size: 1.6rem; }
+      .kbd-btn { padding: 8px 2px; font-size: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -263,7 +269,7 @@
       </div>
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;opacity:0.6;">
         <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,#fff);"></div>
-        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.12</span>
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.13</span>
         <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,#fff);"></div>
       </div>
     </div>
@@ -488,7 +494,7 @@
         </div>
       </div>
     </div>
-    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.12</p>
+    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.13</p>
     <!-- In-game menu overlay -->
     <div id="ingame-overlay">
       <button class="ingame-overlay-btn" onclick="closeIngameMenu();goToMenu()">Return to Main Menu</button>
@@ -501,6 +507,7 @@
 
     // ─── STATS ───────────────────────────────────────────────────────────────
     const STATS_KEY = 'PY_stats';
+    (function(){if(localStorage.getItem('WIPE_PLAYER_HISTORY')){localStorage.removeItem(STATS_KEY);localStorage.removeItem('WIPE_PLAYER_HISTORY');}})();
     function loadStats() {
       return JSON.parse(localStorage.getItem(STATS_KEY) || '{"highScore":0,"gamesPlayed":0,"totalScore":0,"history":[]}');
     }
@@ -558,6 +565,7 @@
     }
 
     const PATCH_NOTES = [
+      { v:'v0.0.13', date:'2026-05', notes:['OPW shell retrofit: start overlay with match history, patch notes, and back-button support.'] },
       { v:'v0.0.12', date:'2026-05', notes:['Challenge mode button removed from start menu.'] },
       { v:'v0.0.11', date:'2026-05', notes:['Improved service worker: CDN resources now cached for offline support.'] },
       { v:'v0.0.10', date:'2026-05', notes:['PWA install support added.'] },
@@ -623,7 +631,13 @@
     }
     window.addEventListener('popstate', function() {
       const ov = document.getElementById('start-overlay');
-      if (ov && !ov.classList.contains('hidden')) showStartPanel('main', true);
+      if (!ov) return;
+      if (!ov.classList.contains('hidden')) {
+        showStartPanel('main', true);
+      } else {
+        alive = false;
+        goToMenu();
+      }
     });
 
     // ─── AUDIO ───────────────────────────────────────────────────────────────
@@ -929,6 +943,7 @@
     // ─── GAME START ──────────────────────────────────────────────────────────
     function startGame(fromChallenge=false) {
       document.getElementById('start-overlay').classList.add('hidden');
+      history.pushState({ panel: 'game' }, '');
       document.getElementById('hud').style.display = 'flex';
       document.getElementById('canvas-wrapper').style.display = 'flex';
       document.getElementById('cmd-console').style.display = 'block';
