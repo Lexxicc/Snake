@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="author" content="lexxicc">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Python v0.0.11</title>
+  <title>Python v0.0.12</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffd343">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -245,7 +245,6 @@
       </div>
       <div class="flex flex-col">
         <button class="start-menu-btn" onclick="startGame()"><span>Play</span><span class="ml-auto text-base opacity-40 font-sans">↵</span></button>
-        <button class="start-menu-btn" onclick="showStartPanel('challenge')"><span>Challenge</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
         <button class="start-menu-btn" onclick="showStartPanel('howtoplay')"><span>How to Play</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
         <button class="start-menu-btn" onclick="showStartPanel('highscores')"><span>High Scores</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
         <button class="start-menu-btn" onclick="showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
@@ -264,7 +263,7 @@
       </div>
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;opacity:0.6;">
         <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,#fff);"></div>
-        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.11</span>
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.12</span>
         <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,#fff);"></div>
       </div>
     </div>
@@ -489,7 +488,7 @@
         </div>
       </div>
     </div>
-    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.11</p>
+    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.12</p>
     <!-- In-game menu overlay -->
     <div id="ingame-overlay">
       <button class="ingame-overlay-btn" onclick="closeIngameMenu();goToMenu()">Return to Main Menu</button>
@@ -559,6 +558,7 @@
     }
 
     const PATCH_NOTES = [
+      { v:'v0.0.12', date:'2026-05', notes:['Challenge mode button removed from start menu.'] },
       { v:'v0.0.11', date:'2026-05', notes:['Improved service worker: CDN resources now cached for offline support.'] },
       { v:'v0.0.10', date:'2026-05', notes:['PWA install support added.'] },
       { v:'v0.0.9', date:'2026-05', notes:['Mobile portrait refit — no-scroll layout on small screens.'] },
