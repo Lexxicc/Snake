@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="author" content="lexxicc">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Python v0.0.13</title>
+  <title>Python v0.0.14</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffd343">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,6 +25,7 @@
       --color-shadow:   #04080d;
     }
 
+    /* ── FRONT MENU ── */
     .menu-scroll {
       background: linear-gradient(180deg, var(--color-bg-dark) 0%, var(--color-panel) 45%, var(--color-panel) 55%, var(--color-bg-dark) 100%);
       border: 6px solid var(--color-primary);
@@ -32,21 +33,88 @@
                   0 0 28px 4px rgba(55,118,171,0.35),
                   0 0 70px rgba(55,118,171,0.15),
                   inset 0 0 40px rgba(0,0,0,0.45);
-      width: 640px; max-width: 92vw; max-height: 92dvh;
+      width: 640px; max-width: 94vw;
+      height: calc(100dvh - 3.2vw); max-height: calc(100dvh - 3.2vw);
+      margin: 1.6vw;
       overflow-y: auto; scrollbar-width: none;
+      display: flex; flex-direction: column;
+      padding: 1.5vw; gap: 1.5vw; box-sizing: border-box;
     }
     .menu-scroll::-webkit-scrollbar { display: none; }
+
+    .logo-container {
+      flex: 1 1 auto;
+      min-height: calc(240px - 1.5vw);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .logo-container svg,
+    .logo-container img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+    .tagline-container {
+      flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; padding: 8px 16px;
+    }
+    .tagline-line { flex: 1; height: 1px; }
+    .tagline-line.left  { background: linear-gradient(to right, transparent, var(--color-primary)); }
+    .tagline-line.right { background: linear-gradient(to left,  transparent, var(--color-primary)); }
+    .tagline-text {
+      font-family: 'VT323', monospace; font-size: 0.95rem;
+      color: var(--color-primary); text-transform: uppercase;
+      letter-spacing: 0.35em; white-space: nowrap;
+    }
+
+    .menu-buttons { flex: 0 0 auto; display: flex; flex-direction: column; }
     .start-menu-btn {
       display: flex; align-items: center; gap: 12px; width: 100%;
-      padding: 14px 24px; font-family: 'VT323', monospace; font-size: 1.45rem;
+      padding: 3vw 24px; font-family: 'VT323', monospace; font-size: 1.45rem;
       text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-glow);
       background: transparent; border: none; border-bottom: 2px solid var(--color-shadow);
       cursor: pointer; text-shadow: 2px 2px 0 var(--color-shadow);
       text-align: left; transition: background 0.12s, padding-left 0.12s;
       touch-action: manipulation;
     }
-    .start-menu-btn:hover { background: rgba(255,222,0,0.1); color: #fff; padding-left: 28px; }
+    .start-menu-btn:hover { background: rgba(255,222,0,0.10); color: #fff; padding-left: 28px; }
     .start-menu-btn:last-child { border-bottom: none; }
+    .start-menu-btn .arrow { margin-left: auto; font-size: 1rem; opacity: 0.4; font-family: sans-serif; }
+
+    .challenge-container {
+      flex: 0 0 auto;
+      padding: 0.75vw 16px 8px;
+      border-top: 2px solid var(--color-shadow);
+    }
+    .challenge-label {
+      font-family: 'VT323', monospace; font-size: 0.75rem;
+      color: var(--color-primary); text-transform: uppercase;
+      letter-spacing: 0.15em; margin: 0 0 0.75vw 0;
+    }
+    .challenge-row { display: flex; gap: 8px; align-items: center; }
+    .challenge-input {
+      flex: 1; padding: 8px 10px; background: var(--color-panel);
+      border: 2px solid var(--color-primary); color: var(--color-glow);
+      font-family: 'VT323', monospace; font-size: 0.9rem; outline: none; min-width: 0;
+      box-sizing: border-box;
+    }
+    .challenge-go {
+      padding: 8px 14px; font-family: 'VT323', monospace; font-size: 1rem;
+      text-transform: uppercase; background: var(--color-primary);
+      color: var(--color-bg-dark); border: none; cursor: pointer; white-space: nowrap;
+    }
+
+    .menu-footer {
+      flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; padding: 0.75vw 16px; opacity: 0.6;
+    }
+    .footer-line { flex: 1; height: 1px; }
+    .footer-line.left  { background: linear-gradient(to right, transparent, var(--color-glow)); }
+    .footer-line.right { background: linear-gradient(to left,  transparent, var(--color-glow)); }
+    .footer-text {
+      font-family: 'VT323', monospace; font-size: 13px; color: var(--color-glow);
+      text-transform: uppercase; letter-spacing: 0.3em; white-space: nowrap;
+    }
+
     .start-back-btn {
       font-family: 'VT323', monospace; font-size: 1.1rem; text-transform: uppercase;
       padding: 6px 14px; color: var(--color-primary); background: transparent;
@@ -64,14 +132,6 @@
       font-weight: bold; text-transform: uppercase; font-style: italic;
     }
     .subpanel-footer { position: sticky; bottom: 0; height: 6px; background: var(--color-bg-dark); }
-    .logo-wrap {
-      min-height: 140px; display: flex; align-items: center;
-      justify-content: center; padding: 16px 0;
-    }
-    @media (max-height: 680px) {
-      .logo-wrap { min-height: 80px; padding: 8px 0; }
-      .start-menu-btn { padding-top: 9px; padding-bottom: 9px; }
-    }
 
     body {
       background-color: var(--color-bg-dark);
@@ -226,7 +286,7 @@
   <!-- ── PYT LOGO SYMBOL ── -->
   <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <symbol id="pyt-logo" viewBox="0 0 200 72">
+      <symbol id="pyt-logo" viewBox="0 0 200 72" preserveAspectRatio="xMidYMid meet">
         <rect width="200" height="72" rx="6" fill="#0d0d0d"/>
         <rect width="3" height="72" rx="1.5" fill="#3776ab"/>
         <text x="12" y="30" font-family="'Courier New',Courier,monospace" font-size="19" font-weight="bold">
@@ -242,65 +302,47 @@
 
     <!-- ── MAIN ── -->
     <div id="start-main" class="menu-scroll relative z-10">
-      <div class="text-center pt-4 pb-4 px-6" style="border-bottom:4px solid var(--color-shadow);">
-        <div class="logo-wrap">
-          <svg viewBox="0 0 200 72" style="width:min(100%,280px);height:auto;display:block;filter:drop-shadow(0 0 12px rgba(55,118,171,0.6))">
-            <use href="#pyt-logo"/>
-          </svg>
-        </div>
-      </div>
-      <div class="flex flex-col">
-        <button class="start-menu-btn" onclick="startGame()"><span>Play</span><span class="ml-auto text-base opacity-40 font-sans">↵</span></button>
-        <button class="start-menu-btn" onclick="showStartPanel('howtoplay')"><span>How to Play</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
-        <button class="start-menu-btn" onclick="showStartPanel('highscores')"><span>High Scores</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
-        <button class="start-menu-btn" onclick="showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
-        <button class="start-menu-btn" onclick="showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
-      </div>
-      <div style="padding:12px 16px 8px;border-top:1px solid var(--color-shadow)">
-        <p style="font-family:'VT323',monospace;font-size:0.75rem;color:var(--color-primary);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px">Accept a Challenge</p>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="main-challenge-input" type="text" placeholder="Enter challenge code"
-                 style="flex:1;padding:8px 10px;background:var(--color-panel);border:2px solid var(--color-primary);
-                        color:var(--color-glow);font-family:'VT323',monospace;font-size:0.9rem;outline:none;min-width:0">
-          <button onclick="acceptChallengeMain()"
-                  style="padding:8px 14px;font-family:'VT323',monospace;font-size:1rem;text-transform:uppercase;
-                         background:var(--color-primary);color:var(--color-bg-dark);border:none;cursor:pointer;white-space:nowrap">GO</button>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;opacity:0.6;">
-        <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,#fff);"></div>
-        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.3em;color:#fff;white-space:nowrap;font-family:'VT323',monospace;">Tacticon Studios 2026 · v0.0.13</span>
-        <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,#fff);"></div>
-      </div>
-    </div>
 
-    <!-- ── CHALLENGE ── -->
-    <div id="start-challenge" class="menu-scroll hidden relative z-10">
-      <div class="subpanel-header">
-        <button class="start-back-btn" onclick="showStartPanel('main')">← Back</button>
-        <h2>Challenge</h2>
+      <!-- ZONE 1 — LOGO -->
+      <div class="logo-container">
+        <svg viewBox="0 0 200 72" preserveAspectRatio="xMidYMid meet" style="filter:drop-shadow(0 0 12px rgba(55,118,171,0.6))">
+          <use href="#pyt-logo"/>
+        </svg>
       </div>
-      <div class="p-6 space-y-6" style="font-family:'VT323',monospace;">
-        <div>
-          <h3 style="color:var(--color-glow);text-transform:uppercase;font-weight:bold;border-bottom:1px solid var(--color-shadow);padding-bottom:4px;margin-bottom:12px">Accept a Challenge</h3>
-          <input id="challenge-input" type="text" placeholder="Paste challenge code..."
-                 style="width:100%;padding:10px 12px;background:var(--color-panel);border:2px solid var(--color-primary);
-                        color:var(--color-glow);font-family:'VT323',monospace;font-size:1rem;outline:none;box-sizing:border-box;">
-          <button onclick="acceptChallenge()"
-                  style="margin-top:12px;width:100%;padding:10px;font-family:'VT323',monospace;
-                         font-size:1.2rem;text-transform:uppercase;background:var(--color-primary);
-                         color:var(--color-bg-dark);border:none;cursor:pointer;">
-            Accept &amp; Play
-          </button>
-          <p id="challenge-error" class="hidden" style="margin-top:8px;color:#e84449;font-size:0.875rem;"></p>
-        </div>
-        <div>
-          <h3 style="color:var(--color-glow);text-transform:uppercase;font-weight:bold;border-bottom:1px solid var(--color-shadow);padding-bottom:4px;margin-bottom:12px">Issue a Challenge</h3>
-          <p style="color:#d1d5db;font-size:0.875rem;margin-bottom:12px">Play normally. At game end you'll get a shareable code — friends face the exact same food spawns and try to beat your score.</p>
-          <p style="color:#d1d5db;font-size:0.875rem;opacity:0.7">Play normally — a challenge code is generated on the end screen after your game.</p>
-        </div>
+
+      <!-- ZONE 2 — TAGLINE -->
+      <div class="tagline-container">
+        <div class="tagline-line left"></div>
+        <span class="tagline-text">Slither · Devour · Survive</span>
+        <div class="tagline-line right"></div>
       </div>
-      <div class="subpanel-footer"></div>
+
+      <!-- ZONE 3 — BUTTONS -->
+      <div class="menu-buttons">
+        <button class="start-menu-btn" onclick="startGame()"><span>Play</span><span class="arrow">↵</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('howtoplay')"><span>How to Play</span><span class="arrow">›</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('highscores')"><span>High Scores</span><span class="arrow">›</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('patchnotes')"><span>Patch Notes</span><span class="arrow">›</span></button>
+        <button class="start-menu-btn" onclick="showStartPanel('settings')"><span>Settings</span><span class="arrow">›</span></button>
+      </div>
+
+      <!-- ZONE 4 — CHALLENGE (inline) -->
+      <div class="challenge-container">
+        <p class="challenge-label">Accept a Challenge</p>
+        <div class="challenge-row">
+          <input id="main-challenge-input" type="text" class="challenge-input" placeholder="Paste challenge code...">
+          <button class="challenge-go" onclick="acceptChallengeMain()">GO</button>
+        </div>
+        <p id="challenge-error" class="hidden" style="margin-top:8px;color:#e84449;font-size:0.875rem;font-family:'VT323',monospace;"></p>
+      </div>
+
+      <!-- ZONE 5 — FOOTER -->
+      <div class="menu-footer">
+        <div class="footer-line left"></div>
+        <span class="footer-text">Tacticon Studios 2026 · v0.0.14</span>
+        <div class="footer-line right"></div>
+      </div>
+
     </div>
 
     <!-- ── HOW TO PLAY ── -->
@@ -494,7 +536,7 @@
         </div>
       </div>
     </div>
-    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.13</p>
+    <p style="font-size:10px;text-align:center;opacity:0.4;padding:4px;letter-spacing:0.3em;text-transform:uppercase;font-family:'VT323',monospace;flex-shrink:0;">&copy; Tacticon Studios 2026 &mdash; v0.0.14</p>
     <!-- In-game menu overlay -->
     <div id="ingame-overlay">
       <button class="ingame-overlay-btn" onclick="closeIngameMenu();goToMenu()">Return to Main Menu</button>
@@ -541,14 +583,8 @@
       return Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6,'0').toUpperCase();
     }
     function acceptChallenge() {
-      const raw = document.getElementById('challenge-input').value.trim().toUpperCase();
-      const errEl = document.getElementById('challenge-error');
-      if (!raw) { errEl.innerText = 'Paste a challenge code first.'; errEl.classList.remove('hidden'); return; }
-      challengeSeed = raw;
-      rng = mulberry32(parseInt(challengeSeed, 16));
-      isChallengeMode = true;
-      errEl.classList.add('hidden');
-      startGame(true);
+      // Legacy alias — challenge widget is now inline on the main menu.
+      acceptChallengeMain();
     }
     function copyShareText(score) {
       if (!challengeSeed) challengeSeed = generateSeed();
@@ -619,7 +655,7 @@
         </div>`).join('');
     }
 
-    const START_PANELS = ['main','challenge','howtoplay','highscores','patchnotes','settings'];
+    const START_PANELS = ['main','howtoplay','highscores','patchnotes','settings'];
     function showStartPanel(name, fromPopstate=false) {
       START_PANELS.forEach(p => {
         const el = document.getElementById('start-'+p);
